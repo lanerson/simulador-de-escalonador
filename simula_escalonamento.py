@@ -26,8 +26,8 @@ def menuEntrada():
         novo_processo.append(n_burst)
         fila_0.append([f'P{i}',novo_processo])
 
-def vazio():
-    return len(fila_0+fila_1+fila_flfs+fila_es) == 0
+def tam():
+    return len(fila_0+fila_1+fila_flfs+fila_es)
 
 def lidandoFilas(tf0, tf1):
     global gantt
@@ -50,7 +50,7 @@ def lidandoFilas(tf0, tf1):
     return tf0, tf1
 
 def lidandoFila0(tf0):   
-    print("fila 0",fila_0)     
+    # print("fila 0",fila_0)     
     fila_0[0][1][0]-=1
     tf0 -= 1
     global gantt
@@ -62,7 +62,7 @@ def lidandoFila0(tf0):
         fila_0.remove(temp)
         if len(temp[1]) != 0: # se ainda tem operações
             # adiciona processo na proxima fila
-            fila_es.append(temp)
+            fila_es.append(temp)            
         gantt += f" {temp[0]} {T}" 
         return TEMPO_0
     if tf0 == 0:
@@ -78,7 +78,7 @@ def lidandoFila0(tf0):
 
 
 def lidandoFila1(tf1):   
-    print("fila 1", fila_1)          
+    # print("fila 1", fila_1)          
     fila_1[0][1][0] -= 1
     tf1 -= 1
     global gantt
@@ -90,24 +90,27 @@ def lidandoFila1(tf1):
         fila_1.remove(temp)
         if len(temp[1]) != 0: # ainda tem operações
             # adiciona processo na próxima fila
-            fila_es.append(temp)
+            fila_es.append(temp)            
         gantt += f" {temp[0]} {T}" 
         return TEMPO_1
     
     if tf1 == 0:
         temp = fila_1[0]
         fila_1.remove(temp)
-        fila_flfs.append(temp)                
+        fila_flfs.append(temp)                        
         gantt += f" {temp[0]} {T}" 
         return TEMPO_1
-    else:
+    else:       
+
+        if len(fila_es) != 0 and fila_es[0][1][0] == 0: # operação ES terminou então esse vai ser interrompido
+            gantt += f" {fila_1[0][0]} {T+1}"
         return tf1
         
 
 
-def lidandoFilaFLFS():  
-    print("fila f", fila_flfs)      
+def lidandoFilaFLFS():       
     fila_flfs[0][1][0]-=1
+    global gantt
     if fila_flfs[0][1][0] == 0: # se tiver terminado essa operação
         # remove da fila flfs
         temp = fila_flfs[0] 
@@ -115,16 +118,17 @@ def lidandoFilaFLFS():
         # remove esta da lista de operações do processo
         temp[1].remove(temp[1][0]) 
         # adiciona ao diagrama da gantt
-        global gantt
         gantt += f" {temp[0]} {T}" 
 
         if len(temp[1]) != 0: # se ainda tiver operações no processo
             # adiciona processo na fila de E/S
-            fila_es.append(temp) 
-        
+            fila_es.append(temp)             
+        return
+    
+    if len(fila_es) != 0 and fila_es[0][1][0] == 1: # operação ES terminou então esse vai ser interrompido            
+            gantt += f" {fila_flfs[0][0]} {T}" 
 
-def lidandoES(tes):    
-    print("fila e", fila_es)
+def lidandoES(tes):           
     tes - 1
     if len(fila_es) == 0: # nenhum processo na fila
         return tes
@@ -140,7 +144,7 @@ def lidandoES(tes):
         # manda o processo para a fila Q0
         fila_0.append(temp)        
         return TEMPO_ES
-    else:        
+    else:                
         return tes
 
 def execucao():
@@ -148,9 +152,17 @@ def execucao():
     tf0 = TEMPO_0
     tf1 = TEMPO_1
     tes = TEMPO_ES
-    while(not(vazio())):
+    while(not(tam() == 0)):
+        # print(T)
+        # print(len(fila_0))
+        # print(len(fila_1))
+        # print(len(fila_flfs))
+        # print(len(fila_es))
+        tamanho = tam()
         tf0, tf1 = lidandoFilas(tf0,tf1)
         tes = lidandoES(tes)
+        if tamanho < tam():
+            print(f"mudou de tamanho no instante {T}")
         T+=1
     print(gantt)
         
