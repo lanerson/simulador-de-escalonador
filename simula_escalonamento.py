@@ -13,6 +13,7 @@ TEMPO_ES = 30
 OCIO = False
 
 quem_ta_executando = 'P0'
+fila_na_hora = []
 
 def situacaoFilas():
     return [len(fila_0), len(fila_1), len(fila_flfs), len(fila_es)]
@@ -72,7 +73,12 @@ def lidandoFila0(tf0):
     # print("fila 0",fila_0)   
     fila_0[0][1][0]-=1
     tf0 -= 1
-    global gantt        
+    global gantt, fila_na_hora, quem_ta_executando
+    # if(quem_ta_executando != fila_0[0][0] and fila_na_hora != tam()) :
+    #     print(f"mudou no tempo {T-1} f0")
+    #     quem_ta_executando = fila_0[0][0]
+    #     fila_na_hora = tam()
+
     if fila_0[0][1][0] == 0: # operação terminou
         # remove operação da lista        
         fila_0[0][1].remove(fila_0[0][1][0])
@@ -84,11 +90,10 @@ def lidandoFila0(tf0):
             fila_es.append(temp)            
         gantt += f" {temp[0]} {T}" 
         return TEMPO_0
-    if tf0 == 0:
+    if tf0 <= 0:
         temp = fila_0[0]
         fila_0.remove(temp)        
-        fila_1.append(temp)
-        
+        fila_1.append(temp)        
         gantt += f" {temp[0]} {T}"
         return TEMPO_0
     else:
@@ -100,7 +105,12 @@ def lidandoFila1(tf1):
     # print("fila 1", fila_1)          
     fila_1[0][1][0] -= 1
     tf1 -= 1
-    global gantt, T
+    global gantt, T, fila_na_hora, quem_ta_executando
+    # if(quem_ta_executando != fila_1[0][0] and fila_na_hora != tam()) :
+    #     print(f"mudou no tempo {T-1} f1")
+    #     quem_ta_executando = fila_1[0][0]
+    #     fila_na_hora = tam()
+
     if fila_1[0][1][0] == 0: # operação terminou        
         # remove operação da lista
         fila_1[0][1].remove(fila_1[0][1][0])
@@ -113,7 +123,7 @@ def lidandoFila1(tf1):
         gantt += f" {temp[0]} {T}" 
         return TEMPO_1
     
-    if tf1 == 0:
+    if tf1 <= 0:
         temp = fila_1[0]
         fila_1.remove(temp)
         fila_flfs.append(temp)                        
@@ -131,7 +141,14 @@ def lidandoFila1(tf1):
 
 def lidandoFilaFLFS():         
     fila_flfs[0][1][0]-=1
-    global gantt, T
+
+    global gantt, T, fila_na_hora, quem_ta_executando
+    # if (quem_ta_executando != fila_flfs[0][0] and fila_na_hora != tam()):
+    #     print(f"mudou no tempo {T-1} fs")
+    #     quem_ta_executando = fila_flfs[0][0]
+    #     fila_na_hora = tam()
+
+
     if fila_flfs[0][1][0] == 0: # se tiver terminado essa operação
         # remove da fila flfs
         temp = fila_flfs[0] 
@@ -168,9 +185,9 @@ def lidandoES(tf1):
     return tf1
     
 
-lista = [143,144,145]
+lista = [87,88, 109, 110]
 def execucao():
-    global T, gantt
+    global T, gantt, fila_na_hora
     tf0 = TEMPO_0
     tf1 = TEMPO_1    
     while(not(tam() == 0)):  
@@ -184,23 +201,30 @@ def execucao():
         tf1 = lidandoES(tf1)     
         T+=1
         s_fim = situacaoFilas()
+        fila_na_hora = s_fim
         if s_inicio[3] > s_fim[3] and (s_fim[1]+s_fim[2] > 0): 
             print("mostrando os tempos", T) 
-            # fila_0[0][1][0]+=1   
-            if(s_fim[1]>0):
+            if s_fim[0] == 1:
+                tf0+=1  
+            if(s_fim[1]>0 and s_fim[0] == 1):
                 gantt += f" {fila_1[0][0]} {T}" 
                 fila_1[0][1][0]-=1 
-            elif(s_fim[2]>0):
+                fila_0[0][1][0]+=1
+            elif(s_fim[2]>0 and s_fim[0] == 1):
                 gantt += f" {fila_flfs[0][0]} {T}"
-                fila_flfs[0][1][0]-=1 
-            if s_fim[3] > 0:
-                fila_es[0][1][0]-=1
-            T+=1
+                fila_flfs[0][1][0]-=1  
+                fila_0[0][1][0]+=1               
+            # if s_fim[3] > 0:
+            #     fila_es[0][1][0]-=1
+            # T+=1
                           
         if T in lista:
             print("mais testes", T)
             print(s_inicio)
             print(s_fim)
+            print(fila_0)
+            print(fila_1)
+            print(fila_flfs)
     print(gantt)
         
         
