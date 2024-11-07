@@ -12,8 +12,26 @@ TEMPO_1 = 15
 TEMPO_ES = 30
 OCIO = False
 
+quem_ta_executando = 'P0'
+
 def situacaoFilas():
     return [len(fila_0), len(fila_1), len(fila_flfs), len(fila_es)]
+
+def menuTeste():
+    
+    # burst = [8,40,10,30]
+    # es= [3,1,2,1]
+    burst = [50,20]
+    es= [1,2]
+    for i in range(len(burst)):
+        novo_processo = []
+        for j in range(es[i]):
+            novo_processo.append(burst[i])
+            novo_processo.append(TEMPO_ES)
+        novo_processo.append(burst[i])
+        fila_0.append([f'P{i}',novo_processo])
+
+
 
 def menuEntrada():
     n_processos = int(input("Digite o total de processos na fila: "))
@@ -150,7 +168,7 @@ def lidandoES(tf1):
     return tf1
     
 
-lista = [67, 68,77,78, 105, 106, 227,228, 242,243]
+lista = [143,144,145]
 def execucao():
     global T, gantt
     tf0 = TEMPO_0
@@ -166,8 +184,9 @@ def execucao():
         tf1 = lidandoES(tf1)     
         T+=1
         s_fim = situacaoFilas()
-        if s_inicio[3] > s_fim[3] and (s_fim[1]+s_fim[2] > 0):  
-                              
+        if s_inicio[3] > s_fim[3] and (s_fim[1]+s_fim[2] > 0): 
+            print("mostrando os tempos", T) 
+            # fila_0[0][1][0]+=1   
             if(s_fim[1]>0):
                 gantt += f" {fila_1[0][0]} {T}" 
                 fila_1[0][1][0]-=1 
@@ -187,5 +206,6 @@ def execucao():
         
 
 if __name__ == "__main__":
-    menuEntrada()
+    # menuEntrada()
+    menuTeste()
     execucao()
