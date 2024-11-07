@@ -5,7 +5,6 @@ fila_flfs = []
 fila_es = []
 
 gantt = "0 "
-
 T = 1 # esse é o tempo em ms
 
 TEMPO_0 = 10
@@ -13,6 +12,8 @@ TEMPO_1 = 15
 TEMPO_ES = 30
 OCIO = False
 
+def situacaoFilas():
+    return [len(fila_0), len(fila_1), len(fila_flfs), len(fila_es)]
 
 def menuEntrada():
     n_processos = int(input("Digite o total de processos na fila: "))
@@ -42,18 +43,18 @@ def lidandoFilas(tf0, tf1):
     elif len(fila_1) != 0:        
         tf1 = lidandoFila1(tf1)        
     elif len(fila_flfs) != 0:        
-        lidandoFilaFLFS()        
+        lidandoFilaFLFS()      
     elif OCIO == False:        
         gantt+=f" ocioso"         
         OCIO = True   
 
     return tf0, tf1
 
-def lidandoFila0(tf0):   
-    # print("fila 0",fila_0)     
+def lidandoFila0(tf0):       
+    # print("fila 0",fila_0)   
     fila_0[0][1][0]-=1
     tf0 -= 1
-    global gantt
+    global gantt        
     if fila_0[0][1][0] == 0: # operação terminou
         # remove operação da lista        
         fila_0[0][1].remove(fila_0[0][1][0])
@@ -77,12 +78,12 @@ def lidandoFila0(tf0):
         
 
 
-def lidandoFila1(tf1):   
+def lidandoFila1(tf1):       
     # print("fila 1", fila_1)          
     fila_1[0][1][0] -= 1
     tf1 -= 1
-    global gantt
-    if fila_1[0][1][0] == 0: # operação terminou
+    global gantt, T
+    if fila_1[0][1][0] == 0: # operação terminou        
         # remove operação da lista
         fila_1[0][1].remove(fila_1[0][1][0])
         # remove processo da fila
@@ -102,15 +103,17 @@ def lidandoFila1(tf1):
         return TEMPO_1
     else:       
 
-        if len(fila_es) != 0 and fila_es[0][1][0] == 0: # operação ES terminou então esse vai ser interrompido
-            gantt += f" {fila_1[0][0]} {T+1}"
+        # if len(fila_es) != 0 and fila_es[0][1][0] == 1: # operação ES terminou então esse vai ser interrompido                                    
+        #     print("veio pra cá também")                 
+        #     gantt += f" {fila_1[0][0]} {T}" 
+            
         return tf1
         
 
 
-def lidandoFilaFLFS():       
+def lidandoFilaFLFS():         
     fila_flfs[0][1][0]-=1
-    global gantt
+    global gantt, T
     if fila_flfs[0][1][0] == 0: # se tiver terminado essa operação
         # remove da fila flfs
         temp = fila_flfs[0] 
@@ -125,48 +128,62 @@ def lidandoFilaFLFS():
             fila_es.append(temp)             
         return
     
-    if len(fila_es) != 0 and fila_es[0][1][0] == 1: # operação ES terminou então esse vai ser interrompido            
-            gantt += f" {fila_flfs[0][0]} {T}" 
+    # elif len(fila_es) != 0 and fila_es[0][1][0] == 0: # operação ES terminou então esse vai ser interrompido                                                                                                
+    #         gantt += f" {fila_flfs[0][0]} {T}"  
+    #         print("vem pra cá")                           
 
-def lidandoES(tes):           
-    tes - 1
+def lidandoES(tf1):           
+    
     if len(fila_es) == 0: # nenhum processo na fila
-        return tes
+        return tf1
     
     fila_es[0][1][0]-=1
-
-    if fila_es[0][1][0] == 0: # operação terminou
+    global T, gantt
+    if fila_es[0][1][0] == 0: # operação terminou        
         # remove processo da fila
         temp = fila_es[0]
-        fila_es.remove(temp)
+        fila_es.remove(temp)        
         # remove esta da lista de operações do processo
         temp[1].remove(temp[1][0])
         # manda o processo para a fila Q0
         fila_0.append(temp)        
-        return TEMPO_ES
-    else:                
-        return tes
+    return tf1
+    
 
+lista = [67, 68,77,78, 105, 106, 227,228, 242,243]
 def execucao():
-    global T
+    global T, gantt
     tf0 = TEMPO_0
-    tf1 = TEMPO_1
-    tes = TEMPO_ES
-    while(not(tam() == 0)):
+    tf1 = TEMPO_1    
+    while(not(tam() == 0)):  
         # print(T)
-        # print(len(fila_0))
-        # print(len(fila_1))
-        # print(len(fila_flfs))
-        # print(len(fila_es))
-        tamanho = tam()
-        tf0, tf1 = lidandoFilas(tf0,tf1)
-        tes = lidandoES(tes)
-        if tamanho < tam():
-            print(f"mudou de tamanho no instante {T}")
+        # print(fila_0)      
+        # print(fila_1)      
+        # print(fila_flfs)      
+        # print(fila_es)      
+        s_inicio = situacaoFilas()
+        tf0, tf1 = lidandoFilas(tf0,tf1)    
+        tf1 = lidandoES(tf1)     
         T+=1
+        s_fim = situacaoFilas()
+        if s_inicio[3] > s_fim[3] and (s_fim[1]+s_fim[2] > 0):  
+                              
+            if(s_fim[1]>0):
+                gantt += f" {fila_1[0][0]} {T}" 
+                fila_1[0][1][0]-=1 
+            elif(s_fim[2]>0):
+                gantt += f" {fila_flfs[0][0]} {T}"
+                fila_flfs[0][1][0]-=1 
+            if s_fim[3] > 0:
+                fila_es[0][1][0]-=1
+            T+=1
+                          
+        if T in lista:
+            print("mais testes", T)
+            print(s_inicio)
+            print(s_fim)
     print(gantt)
         
-
         
 
 if __name__ == "__main__":
